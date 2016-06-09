@@ -1,4 +1,8 @@
-doPlot <- function(x, col, col.fn = function(col) hcl(col * 360, 130, 60), alpha=0.3, main=NULL, edges=200, border=NA, col.txt=1, spec=c(), ...) {
+library(shape)
+library(foreach)
+library(RCurl)
+
+doPlot <- function(x, col, col.fn = function(col) hcl(col * 360, 130, 60), alpha=0.3, main=NULL, edges=200, border=NA, col.txt=1, spec=c(), areaLabels=TRUE, ...) {
   # calculate total extents
   xtp <- x$centers + x$diameters / 2
   xtm <- x$centers - x$diameters / 2
@@ -22,22 +26,22 @@ doPlot <- function(x, col, col.fn = function(col) hcl(col * 360, 130, 60), alpha
   if (!is.null(border)) border <- rep(border, length.out=n)
   # plot all circles
   for (i in seq.int(n))
-    polygon(x$centers[i, 1] +  x$diameters[i] * sx, x$centers[i, 2] + x$diameters[i] * sy, col = col[i], border = border[i])
+    polygon(x$centers[i, 1] +  x$diameters[i] * sx, x$centers[i, 2] + x$diameters[i] * sy, col = col[i], border = border[i], lwd=3)
   # if col.txt is not NA, plot the circle text
   
   if (!all(is.na(col.txt))) {
     for(i in seq.int(n)) {
       r <- (x$diameters[i]) / 2
       text(x$centers[i, 1] - r, x$centers[i ,2] + r, x$labels[i], col= border[i])
-      print(x$centers[i])
     }
   }
   
-  for(zone in names(spec)) {
-    p <- getZoneCentroid(x, zone)
-    if(is.double(p$value$x)) {
-      print(paste0(p$value$x, ",", p$value$y))
-      text(p$value$x, p$value$y, spec[zone])
+  if(areaLabels) {
+    for(zone in names(spec)) {
+      p <- getZoneCentroid(x, zone)
+      if(is.double(p$value$x)) {
+        text(p$value$x, p$value$y, spec[zone])
+      }
     }
   }
   
@@ -45,6 +49,38 @@ doPlot <- function(x, col, col.fn = function(col) hcl(col * 360, 130, 60), alpha
   # finish with title
   title(main = main, ...)
   invisible(NULL)
+}
+
+plotCircles <- function(d, spec, border=NA) {
+  
+  if(0 == length(d$circles)) {
+    return()
+  }
+  max_radius <- max(d$circles$radius)
+  max_x <- max(d$circles$x)
+  min_x <- min(d$circles$x)
+  max_y <- max(d$circles$y)
+  min_y <- min(d$circles$y)
+  
+  # Create a large enough canvas
+  emptyplot(xlim=c(min_x - max_radius, max_x + max_radius), ylim=c(min_y - max_radius, max_y + max_radius))
+  
+  for(i in seq(length(d$circles))) {
+    radius <- d$circles[i,][['radius']]
+    cx <- d$circles[i,][['x']]
+    cy <- d$circles[i,][['y']]
+  # sapply(d$circles, function (x) {
+    filledcircle(r1=radius, mid=c(cx, cy), col=rgb(1,1,1,0), lcol=border[i], lwd=3)
+    text(cx - radius, cy + radius, d$circles[i,]['label'], col= border[i])
+    
+    for(zone in names(spec)) {
+      p <- getZC(d, zone)
+      if(is.double(p$value$x)) {
+        text(p$value$x, p$value$y, spec[zone])
+      }
+    }
+  # })
+  }
 }
 
 vdToCircles <- function (vd) {
@@ -61,14 +97,8 @@ vdToCircles <- function (vd) {
   circles
 }
 
-getZoneCentroid <- function (vd, zone, url, ...) {
-  if(missing(vd)) {
-    stop("VennDiagram must be specified")
-  }
-  
-  circles <- vdToCircles(vd)
-  json <- jsonlite::toJSON(list("circles" = circles))
-  print(json)
+getZC <- function(circles, zone, url, ...) {
+  json <- jsonlite::toJSON(circles)
   
   if(missing(url)) {
     # if you don't provide a URL we'll use a test one.
@@ -77,6 +107,22 @@ getZoneCentroid <- function (vd, zone, url, ...) {
     resp <- doFormPost(url, json)
   }
   structure(fromJSON(resp), class="Point2D")
+}
+getZoneCentroid <- function (vd, zone, url, ...) {
+  if(missing(vd)) {
+    stop("VennDiagram must be specified")
+  }
+  
+  circles <- vdToCircles(vd)
+  getZC(list("circles" = circles), zone, url)
+}
+
+getICirclesDiagram <- function(combinations) {
+  j <- foreach(i = 1:length(combinations)) %do% combinations[i]
+  l <- list("area_specifications" = j)
+  json <- rjson::toJSON(l)
+  
+  jsonlite::fromJSON(doFormPost("http://localhost:8080/icircles/layout", json))
 }
 
 doFormPost <- function (url, json) {
