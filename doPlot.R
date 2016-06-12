@@ -93,7 +93,7 @@ plotCircles <- function(d, spec, border=NA) {
 
 # An attempt to get the same colour given a label and list of labels
 getColour <- function (colours, labels, label) {
-  colours[[match(label, sort(labels))]]
+  colours[[ match(label, unique(sort(labels))) ]]
 }
 
 vdToCircles <- function (vd) {
@@ -135,9 +135,7 @@ getICirclesDiagram <- function(combinations) {
   l <- list("area_specifications" = j)
   json <- rjson::toJSON(l)
   
-  circles <- jsonlite::fromJSON(doFormPost("http://localhost:8080/icircles/layout", json))
-  print(circles)
-  circles
+  jsonlite::fromJSON(doFormPost("http://localhost:8080/icircles/layout", json))
 }
 
 doFormPost <- function (url, json) {
