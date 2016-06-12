@@ -80,7 +80,8 @@ plotCircles <- function(d, spec, border=NA) {
     colour <- getColour(border, d$circles[["label"]], lab)
     filledcircle(r1=radius, mid=c(cx, cy), col=rgb(1,1,1,0), lcol=colour, lwd=3)
     text(cx - radius, cy + radius, lab, col=colour)
-    
+  }
+  
     for(zone in names(spec)) {
       p <- getZC(d, zone)
       if(is.double(p$value$x)) {
@@ -88,7 +89,7 @@ plotCircles <- function(d, spec, border=NA) {
       }
     }
   # })
-  }
+  
 }
 
 # An attempt to get the same colour given a label and list of labels
