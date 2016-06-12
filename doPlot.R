@@ -24,15 +24,21 @@ doPlot <- function(x, col, col.fn = function(col) hcl(col * 360, 130, 60), alpha
   sx <- cos(s) / 2 # VD uses diameter, not radius
   sy <- sin(s) / 2
   if (!is.null(border)) border <- rep(border, length.out=n)
+  
   # plot all circles
-  for (i in seq.int(n))
-    polygon(x$centers[i, 1] +  x$diameters[i] * sx, x$centers[i, 2] + x$diameters[i] * sy, col = col[i], border = border[i], lwd=3)
+  for (i in seq.int(n)) {
+    lab <- x$labels[i]
+    colour <- getColour(border, x$labels, lab)
+    polygon(x$centers[i, 1] +  x$diameters[i] * sx, x$centers[i, 2] + x$diameters[i] * sy, col = col[i], border = colour, lwd=3)
   # if col.txt is not NA, plot the circle text
+  }
   
   if (!all(is.na(col.txt))) {
     for(i in seq.int(n)) {
       r <- (x$diameters[i]) / 2
-      text(x$centers[i, 1] - r, x$centers[i ,2] + r, x$labels[i], col= border[i])
+      lab <- x$labels[i]
+      colour <- getColour(border, x$labels, lab)
+      text(x$centers[i, 1] - r, x$centers[i ,2] + r, x$labels[i], col= colour)
     }
   }
   
@@ -65,13 +71,15 @@ plotCircles <- function(d, spec, border=NA) {
   # Create a large enough canvas
   emptyplot(xlim=c(min_x - max_radius, max_x + max_radius), ylim=c(min_y - max_radius, max_y + max_radius))
   
-  for(i in seq(length(d$circles))) {
+  for(i in seq(nrow(d$circles))) {
     radius <- d$circles[i,][['radius']]
     cx <- d$circles[i,][['x']]
     cy <- d$circles[i,][['y']]
-  # sapply(d$circles, function (x) {
-    filledcircle(r1=radius, mid=c(cx, cy), col=rgb(1,1,1,0), lcol=border[i], lwd=3)
-    text(cx - radius, cy + radius, d$circles[i,]['label'], col= border[i])
+  # sapply(d$circles, function (x) {}
+    lab <- d$circles[i,]['label']
+    colour <- getColour(border, d$circles[["label"]], lab)
+    filledcircle(r1=radius, mid=c(cx, cy), col=rgb(1,1,1,0), lcol=colour, lwd=3)
+    text(cx - radius, cy + radius, lab, col=colour)
     
     for(zone in names(spec)) {
       p <- getZC(d, zone)
@@ -81,6 +89,11 @@ plotCircles <- function(d, spec, border=NA) {
     }
   # })
   }
+}
+
+# An attempt to get the same colour given a label and list of labels
+getColour <- function (colours, labels, label) {
+  colours[[match(label, sort(labels))]]
 }
 
 vdToCircles <- function (vd) {
@@ -122,7 +135,9 @@ getICirclesDiagram <- function(combinations) {
   l <- list("area_specifications" = j)
   json <- rjson::toJSON(l)
   
-  jsonlite::fromJSON(doFormPost("http://localhost:8080/icircles/layout", json))
+  circles <- jsonlite::fromJSON(doFormPost("http://localhost:8080/icircles/layout", json))
+  print(circles)
+  circles
 }
 
 doFormPost <- function (url, json) {
