@@ -36,8 +36,8 @@ vd <- venneuler(spec)
 
 circles <- getICirclesDiagram(spec)
 
-# Use custom drawing routine rather than venneuler.plot
-cs <- c(hrgb(166,206,227),hrgb(31,120,180),hrgb(178,223,138),hrgb(51,160,44),hrgb(251,154,153),hrgb(227,26,28),hrgb(253,191,111),hrgb(255,127,0),hrgb(202,178,214),hrgb(106,61,154))
+n <- 7
+cs <- sapply(seq.int(7), function(x) {hsv(h= (x*256/7)/256, s = 0.5, v = 0.5, alpha = 1)})
 
 svg("$ARGV.zones-icircles.svg")
 plotCircles(circles, spec, border=cs)
