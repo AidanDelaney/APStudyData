@@ -5,9 +5,10 @@ library(RCurl)
 doPlot <- function(x, col, col.fn = function(col) hcl(col * 360, 130, 60), alpha=0.3, main=NULL, edges=200, border=NA, col.txt=1, spec=c(), areaLabels=TRUE, ...) {
   # calculate total extents
   xtp <- x$centers + x$diameters / 2
-  xtm <- x$centers - x$diameters / 2
-  xr <- range(c(xtp[,1], xtm[,1]))
-  yr <- range(c(xtp[,2], xtm[,2]))
+  xtm <- (x$centers - x$diameters / 2) - 0.1 # - 0.1 tries to make space so labels aren't truncated
+  xtmp <- (x$centers - x$diameters / 2)
+  xr <- range(c(xtp[,1] , xtm[,1]))
+  yr <- range(c(xtp[,2], xtmp[,2]))
   # create canvas
   plot.new()
   plot.window(xr, yr, "", asp = 1)
@@ -29,7 +30,7 @@ doPlot <- function(x, col, col.fn = function(col) hcl(col * 360, 130, 60), alpha
   for (i in seq.int(n)) {
     lab <- x$labels[i]
     colour <- getColour(border, x$labels, lab)
-    polygon(x$centers[i, 1] +  x$diameters[i] * sx, x$centers[i, 2] + x$diameters[i] * sy, col = col[i], border = colour, lwd=3)
+    polygon(x$centers[i, 1] +  x$diameters[i] * sx, x$centers[i, 2] + x$diameters[i] * sy, col = rgb(1, 1, 1, alpha=0), border = colour, lwd=3)
   # if col.txt is not NA, plot the circle text
   }
   
@@ -38,7 +39,7 @@ doPlot <- function(x, col, col.fn = function(col) hcl(col * 360, 130, 60), alpha
       r <- (x$diameters[i]) / 2
       lab <- x$labels[i]
       colour <- getColour(border, x$labels, lab)
-      text(x$centers[i, 1] - r, x$centers[i ,2] + r, x$labels[i], col= colour)
+      text(x$centers[i, 1] - (1.2*r), x$centers[i ,2] + r, x$labels[i], col= colour)
     }
   }
   
@@ -64,7 +65,7 @@ plotCircles <- function(d, spec, border=NA) {
   }
   max_radius <- max(d$circles$radius)
   max_x <- max(d$circles$x)
-  min_x <- min(d$circles$x)
+  min_x <- min(d$circles$x) - 50 # hardcode to increase label space.
   max_y <- max(d$circles$y)
   min_y <- min(d$circles$y)
   
@@ -79,7 +80,7 @@ plotCircles <- function(d, spec, border=NA) {
     lab <- d$circles[i,]['label']
     colour <- getColour(border, d$circles[["label"]], lab)
     filledcircle(r1=radius, mid=c(cx, cy), col=rgb(1,1,1,0), lcol=colour, lwd=3)
-    text(cx - radius, cy + radius, lab, col=colour)
+    text(cx - (1.2*radius), cy + radius, lab, col=colour)
   }
   
     for(zone in names(spec)) {
