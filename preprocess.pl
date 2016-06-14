@@ -37,7 +37,7 @@ vd <- venneuler(spec)
 circles <- getICirclesDiagram(spec)
 
 n <- 7
-cs <- sapply(seq.int(7), function(x) {hsv(h= (x*256/7)/256, s = 0.5, v = 0.5, alpha = 1)})
+cs <- sapply(seq.int(n), function(x) {hsv(h= x*(1/n), s = 0.5, v = 0.5, alpha = 1)})
 
 svg("$ARGV.zones-icircles.svg")
 plotCircles(circles, spec, border=cs)
