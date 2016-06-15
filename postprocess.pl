@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 use List::Util qw(shuffle);
 use List::MoreUtils qw(uniq zip);
 
