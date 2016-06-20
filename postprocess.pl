@@ -32,14 +32,8 @@ sub replaceColour {
 
     @palette = shuffle @c_icircles;
 
-    # Now go through the file and replace any element of @colours[i] with @palette[i]
-    my %c_map;
-    foreach my $i (0..$#c_icircles-1) {
-	$c_map{$c_icircles[$i]} = $palette[$i];
-    }
-
-    sedColours(\%c_map, "manual/$qname.zones.zones-icircles.svg", "$qname-icircles.svg");
-    sedColours(\%c_map, "manual/$qname.zones.zones-wilkinson.svg", "$qname-wilkinson.svg");
+    sedColours(\@c_icircles, \@palette, "manual/$qname.zones.zones-icircles.svg", "$qname-icircles.svg");
+    sedColours(\@c_icircles, \@palette, "manual/$qname.zones.zones-wilkinson.svg", "$qname-wilkinson.svg");
 }
 
 sub getColours {
@@ -64,7 +58,10 @@ sub getColours {
 }
 
 sub sedColours {
-    my $c_map = shift;
+    my $orig_ref = shift;
+    my @orig = @{ $orig_ref };
+    my $rep_ref = shift;
+    my @replacement = @{ $rep_ref };
     my $fname = shift;
     my $ofname = shift;
 
@@ -73,9 +70,14 @@ sub sedColours {
     my $data = <$fh>;
     close $fh;
 
+    foreach my $i (0..($orig-1)) {
+	my $j = $i + 1;
+	$data =~ s/$orig[$i]/\#$j$j$j$j$j$j/g;
+    }
 
-    foreach $colour (keys %{$c_map}) {
-	$data =~ s/$colour/$c_map->{$colour}/g;
+    foreach my $i (0..($replacement-1)) {
+	my $j = $i + 1;
+	$data =~ s/\#$j$j$j$j$j$j/$replacement[$i]}/g;
     }
 
     open(my $fh, ">" , $ofname) or die ("Can't open $ofname\n");
