@@ -22,5 +22,7 @@
 
 ## Drawing issues with Wilkinson
 
+  * q6 has incorrect abstract syntax.
+  * q11 has *very* small zone.
   * q17.zones has concurrent contours
   * q29 has a strangly placed contour `Cars`
