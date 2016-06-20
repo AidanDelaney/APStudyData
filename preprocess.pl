@@ -33,6 +33,7 @@ vd <- venneuler(spec)
 circles <- getICirclesDiagram(spec)
 
 cs <- rainbow_hcl(length(circles\$circles\$label))
+cs <- cs[sample(length(circles$circles$label))]
 
 svg("$ARGV.zones-icircles.svg")
 plotCircles(circles, spec, border=cs)
