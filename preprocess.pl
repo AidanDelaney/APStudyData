@@ -23,22 +23,16 @@ print $fh <<EOF;
 
 library(venneuler)
 library(jsonlite)
+library(colorspace)
 
 source("doPlot.R")
-
-# convert an 8-bit RGB spec (i.e. HTML) to R.
-hrgb <- function (r, g, b) {
-  rgb(r/255, g/255, b/255)
-}
 
 spec <-$spec
 vd <- venneuler(spec)
 
 circles <- getICirclesDiagram(spec)
 
-n <- 7
-cs <- sapply(seq.int(n), function(x) {hcl(h= 360/x, alpha = 1)})
-#cs <- rainbow(7, s=0.5, v=0.5)
+cs <- rainbow_hcl(length(circles\$circles\$label))
 
 svg("$ARGV.zones-icircles.svg")
 plotCircles(circles, spec, border=cs)
