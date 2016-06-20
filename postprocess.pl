@@ -30,7 +30,7 @@ sub replaceColour {
     # Check the list we get from both files is cool
     @c_icircles ~~ @c_wilkinson or die("iCircles and Wilkinson colours don't match for $qname!");
 
-    @palette = shuffle qw(#bcac40 #60bc40 #40bc8c #4080bc #6c40bc #bb40bc #bc4040);
+    @palette = shuffle @c_icircles;
 
     # Now go through the file and replace any element of @colours[i] with @palette[i]
     my %c_map;
